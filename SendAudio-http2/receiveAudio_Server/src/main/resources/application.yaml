@@ -1,0 +1,11 @@
+# Server
+server:
+  port: 442	# HTTPS
+  ssl:
+    enabled: true
+    key-alias: keystore
+    key-store: keystore.p12
+    key-store-password: 1q2w3e4r
+    key-password: 1q2w3e4r
+    trust-store: truststore.p12
+    trust-store-password: 1q2w3e4r

@@ -9,8 +9,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 @RestController
 @Slf4j
@@ -18,23 +27,57 @@ public class AudioController {
     private UserHeader userHeader;
     private HttpHeaders headers;
 
-    @PostMapping
-    public void sendAudio(byte[] audioBuf){
+    @PostMapping("/test")
+    public void sendAudio(@RequestBody byte[] audioBuf){
         log.info("size : {}", audioBuf.length);
-
+        trustSSL();
         userHeader = new UserHeader("test","test");
         headers = new HttpHeaders();
         headers.add("tid", userHeader.getTid());
         headers.add("vin", userHeader.getVin());
         headers.add("content-type", "application/json");
 
-        byte[] chunk = new byte[320];
-        
-        HttpEntity entity = new HttpEntity<>(headers);
+        String finalize = "finalize";
 
         RestTemplate restTemplate = new RestTemplate();
-//        while (chunk == 0){
-//            chunk = audioBuf.
-//        }
+//        String url = "http://localhost:8080/receiveAudio";
+        String url = "https://localhost:442/receiveAudio";
+        int offset =0;
+        int chunkSize = 320;
+        while (offset < audioBuf.length){
+            int remainByte = Math.min(chunkSize, audioBuf.length-offset);
+            byte[] chunk = new byte[remainByte];
+            System.arraycopy(audioBuf, offset, chunk, 0, remainByte);
+
+            HttpEntity<byte[]> entity = new HttpEntity<>(chunk, headers);
+            restTemplate.postForObject(url, entity,String.class);
+
+            offset+= chunkSize;
+        }
+        String finalizeResponse = restTemplate.postForObject(url, finalize, String.class);
+        System.out.println("Response: " + finalizeResponse);
+    }
+
+    public static void trustSSL() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[] {
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {}
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                            //return null;
+                        }
+                    }
+            };
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
