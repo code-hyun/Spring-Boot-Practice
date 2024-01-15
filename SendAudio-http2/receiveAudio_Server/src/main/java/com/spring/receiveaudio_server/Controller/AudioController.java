@@ -1,5 +1,6 @@
 package com.spring.receiveaudio_server.Controller;
 
+import com.spring.receiveaudio_server.protocol.UserHeader;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,10 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class AudioController {
-
     @PostMapping("receiveAudio")
     public ResponseEntity<String> receiveAudio(@RequestBody byte[] audioBuf, @RequestHeader Map<String, String> headers) throws IOException {
+        UserHeader userHeader = new UserHeader(headers.get("tid"), "vin_test", headers.get("vrcodec"));
+
         String endMarker = "end"; // End marker for the audio stream
         String filePath = "D:\\01. project\\Spring Boot\\practice_Spring_Boot\\SendAudio-http2\\receiveAudio_Server\\src\\main\\resources\\audio\\" + headers.get("tid") + "-" + "outputFile.opus"; // File path for the output file
 
