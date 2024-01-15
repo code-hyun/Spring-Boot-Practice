@@ -1,16 +1,9 @@
 package com.spring.sendaudio_client.controller;
 
 import com.spring.sendaudio_client.protocol.UserHeader;
-import jakarta.activation.MimeType;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -20,6 +13,8 @@ import javax.net.ssl.X509TrustManager;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @Slf4j
@@ -27,14 +22,18 @@ public class AudioController {
     private UserHeader userHeader;
     private HttpHeaders headers;
 
-    @PostMapping("/test")
-    public void sendAudio(@RequestBody byte[] audioBuf){
-        log.info("size : {}", audioBuf.length);
+    @PostMapping("/request")
+    public String sendAudio(@RequestBody byte[] audioBuf, @RequestHeader Map<String, String> header){
+
+        log.info("tid {} size : {} vrCodec {}", header.get("tid"), audioBuf.length, header.get("vrcodec"));
         trustSSL();
-        userHeader = new UserHeader("test","test");
+
+        userHeader = new UserHeader(header.get("tid"),"vin_test", header.get("vrcodec"));
         headers = new HttpHeaders();
+
         headers.add("tid", userHeader.getTid());
         headers.add("vin", userHeader.getVin());
+        headers.add("vrCodec", userHeader.getVrCodec());
         headers.add("content-type", "application/json");
 
         String finalize = "finalize";
@@ -54,9 +53,22 @@ public class AudioController {
 
             offset+= chunkSize;
         }
-        String finalizeResponse = restTemplate.postForObject(url, finalize, String.class);
+
+        HttpEntity<String> entity = new HttpEntity<>("end", headers);
+        String finalizeResponse = restTemplate.postForObject(url, entity, String.class);
         System.out.println("Response: " + finalizeResponse);
+
+        if (Objects.equals(finalizeResponse, "end")){
+            return "ok";
+
+        }else{
+            return finalizeResponse;
+        }
+
     }
+
+
+
 
     public static void trustSSL() {
         try {

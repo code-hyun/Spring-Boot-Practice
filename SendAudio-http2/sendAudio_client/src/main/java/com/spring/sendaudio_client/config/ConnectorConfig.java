@@ -22,7 +22,7 @@ public class ConnectorConfig {
 
     private Connector createStandardConnector(){ // 커넥터 리턴 메소드
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
-        connector.setPort(8080); // https가 적용 되지 않는 요청에 대한 포트
+        connector.setPort(8081); // https가 적용 되지 않는 요청에 대한 포트
         return connector;
     }
 }

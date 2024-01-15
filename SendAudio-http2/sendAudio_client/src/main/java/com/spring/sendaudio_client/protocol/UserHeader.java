@@ -11,9 +11,11 @@ import org.springframework.stereotype.Component;
 public class UserHeader {
     private String tid;
     private String vin;
+    private String vrCodec;
 
-    public UserHeader(String tid, String vin) {
+    public UserHeader(String tid, String vin, String vrCodec) {
         this.tid = tid;
         this.vin = vin;
+        this.vrCodec = vrCodec;
     }
 }
