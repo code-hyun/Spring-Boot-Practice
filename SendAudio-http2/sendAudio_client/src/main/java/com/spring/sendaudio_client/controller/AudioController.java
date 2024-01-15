@@ -19,6 +19,7 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class AudioController {
+    static final int chunkSize = 640;
     private UserHeader userHeader;
     private HttpHeaders headers;
 
@@ -42,9 +43,8 @@ public class AudioController {
 //        String url = "http://localhost:8080/receiveAudio";
         String url = "https://localhost:442/receiveAudio";
         int offset =0;
-        int chunkSize = 320;
         while (offset < audioBuf.length){
-            int remainByte = Math.min(chunkSize, audioBuf.length-offset);
+            int remainByte = Math.min(chunkSize, audioBuf.length - offset);
             byte[] chunk = new byte[remainByte];
             System.arraycopy(audioBuf, offset, chunk, 0, remainByte);
 
