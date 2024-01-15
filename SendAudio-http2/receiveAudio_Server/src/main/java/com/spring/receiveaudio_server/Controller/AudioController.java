@@ -23,16 +23,30 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class AudioController {
-    private RTZStt rtzStt;
+    private final RTZStt rtzStt;
+    boolean TOKEN = false;
+    String Token = "";
+    @Autowired
+    public AudioController(RTZStt rtzStt) {
+        this.rtzStt = rtzStt;
+    }
     @PostMapping("receiveAudio")
     public ResponseEntity<String> receiveAudio(@RequestBody byte[] audioBuf, @RequestHeader Map<String, String> headers) throws Exception {
-        UserHeader userHeader = new UserHeader(headers.get("tid"), "vin_test", headers.get("vrcodec"));
 
+        UserHeader userHeader = new UserHeader(headers.get("tid"), "vin_test", headers.get("vrcodec"));
+        if(TOKEN){
+            TOKEN = true;
+        }else{
+            Token = rtzStt.getAccessToken();
+            TOKEN = true;
+        }
         String endMarker = "end"; // End marker for the audio stream
         String filePath = "D:\\01. project\\Spring Boot\\practice_Spring_Boot\\SendAudio-http2\\receiveAudio_Server\\src\\main\\resources\\audio\\" + headers.get("tid") + "-" + "outputFile.opus"; // File path for the output file
 
         log.info("received chunk size : {}", audioBuf.length);
-        rtzStt.stt(audioBuf);
+        // ** 해결 해야할 부분 :  음성을 텍스트로 바꾼 결과
+        String speachToText = rtzStt.stt(audioBuf, Token);
+        log.info(speachToText);
 
 
         try (FileOutputStream fos = new FileOutputStream(filePath, true)) {
