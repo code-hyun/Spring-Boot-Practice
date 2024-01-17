@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class UserHeader {
     private String tid;
     private String vin;

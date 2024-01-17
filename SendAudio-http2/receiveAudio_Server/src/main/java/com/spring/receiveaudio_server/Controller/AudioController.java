@@ -1,5 +1,6 @@
 package com.spring.receiveaudio_server.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.receiveaudio_server.protocol.UserHeader;
 import com.spring.receiveaudio_server.stt.RTZStt;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,17 +24,14 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class AudioController {
-    private RTZStt rtzStt;
     @PostMapping("receiveAudio")
     public ResponseEntity<String> receiveAudio(@RequestBody byte[] audioBuf, @RequestHeader Map<String, String> headers) throws Exception {
-        UserHeader userHeader = new UserHeader(headers.get("tid"), "vin_test", headers.get("vrcodec"));
-
+//        UserHeader userHeader = new UserHeader(headers.get("tid"), "vin_test", headers.get("vrcodec"));
         String endMarker = "end"; // End marker for the audio stream
         String filePath = "D:\\01. project\\Spring Boot\\practice_Spring_Boot\\SendAudio-http2\\receiveAudio_Server\\src\\main\\resources\\audio\\" + headers.get("tid") + "-" + "outputFile.opus"; // File path for the output file
 
         log.info("received chunk size : {}", audioBuf.length);
-        rtzStt.stt(audioBuf);
-
+//        rtzStt.stt(audioBuf);
 
         try (FileOutputStream fos = new FileOutputStream(filePath, true)) {
             fos.write(audioBuf);
@@ -50,8 +48,6 @@ public class AudioController {
             log.error("Error file: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error");
         }
-
-
 
     }
 
